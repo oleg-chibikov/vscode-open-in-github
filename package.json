@@ -77,14 +77,8 @@
         "openInGitHub.defaultBranch": {
           "scope": "resource",
           "type": "string",
-          "default": "master",
-          "description": "Controls which branch will be treated as default."
-        },
-        "openInGitHub.alwaysUseDefaultBranch": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "When enabled skips branch detection and always uses default branch."
+          "default": "",
+          "description": "Branch to link to first. When empty, the remote default branch, then main, then master. Falls back to the current branch when the file isn't there."
         },
         "openInGitHub.defaultRemote": {
           "scope": "resource",
@@ -111,18 +105,6 @@
             "Gitlab"
           ],
           "description": "Defines type of repository"
-        },
-        "openInGithub.maxBuffer": {
-          "scope": "resource",
-          "type": "number",
-          "default": 204800,
-          "description": "Controls the `maxBuffer` allowed when executing git commands."
-        },
-        "openInGitHub.excludeCurrentRevision": {
-          "scope": "resource",
-          "type": "boolean",
-          "default": false,
-          "description": "Determines whether to disable URL suggestions for the current revision (commit SHA)"
         },
         "openInGitHub.remoteURLMapping": {
           "scope": "resource",

@@ -25,16 +25,14 @@ When editing a file, use the command palette (cmd + shift + p / ctrl + shift + p
 - Copy GitHub URL for history for a file — "Copy GitHub URL: History"
 
 ![Commands](assets/commands.png)
-![Multiple remotes](assets/multiple-remotes-and-branches.png)
 
 ## Features
 
-- Supports multiple remotes and branches.
+- Links to main or master. Uses the current branch only when the file isn't on main yet.
 - Supports in-house GitHub installations.
 - Works with Bitbucket and Gitlab.
 - Configurable default branch.
 - Open/Copy multiline selection.
-- Open/Copy current revision.
 
 ## Configuration
 
@@ -43,16 +41,9 @@ Add these lines to the workspace settings:
 ```js
 {
   ...
-  "openInGitHub.defaultBranch": "master",
+  // Branch to link to first, empty means the remote default, then main, then master
+  "openInGitHub.defaultBranch": "",
   "openInGitHub.defaultRemote": "origin",
-  "openInGithub.maxBuffer": 512000,
-
-  
-  // When enabled skips branch detection and always uses default branch.
-  "openInGitHub.alwaysUseDefaultBranch": false,
-
-  // Determines whether to disable URL suggestions for the current revision (commit SHA)
-  "openInGitHub.excludeCurrentRevision": false,
 
   // Allows mapping from one remote to another when generating a URL
   "openInGitHub.remoteURLMapping": {

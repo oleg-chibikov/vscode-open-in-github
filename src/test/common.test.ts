@@ -184,6 +184,76 @@ suite("#getCurrentRevision", () => {
   });
 });
 
+suite("#resolveBranch", () => {
+  const fakeGit =
+    (existing: string[], remoteHead = "", current = "feature/x") =>
+    (args: string[]) => {
+      const [cmd, ...rest] = args;
+      if (cmd === "symbolic-ref") {
+        return remoteHead
+          ? Promise.resolve(`origin/${remoteHead}`)
+          : Promise.reject(new Error("no HEAD"));
+      }
+      if (cmd === "cat-file") {
+        return existing.includes(rest[1])
+          ? Promise.resolve("")
+          : Promise.reject(new Error("missing"));
+      }
+      if (rest[0] === "--abbrev-ref") return Promise.resolve(current);
+      return Promise.resolve("abc123");
+    };
+
+  test("should prefer main when the file is there", async () => {
+    const run = fakeGit(["origin/main:a.ts", "origin/master:a.ts"]);
+    assert.equal(
+      await common.resolveBranch(run, "", "origin", "a.ts", ""),
+      "main"
+    );
+  });
+
+  test("should use master when there is no main", async () => {
+    const run = fakeGit(["origin/master:a.ts"]);
+    assert.equal(
+      await common.resolveBranch(run, "", "origin", "a.ts", ""),
+      "master"
+    );
+  });
+
+  test("should put the remote HEAD and the configured branch first", async () => {
+    const run = fakeGit(["origin/main:a.ts", "origin/dev:a.ts"], "dev");
+    assert.equal(
+      await common.resolveBranch(run, "", "origin", "a.ts", ""),
+      "dev"
+    );
+    assert.equal(
+      await common.resolveBranch(
+        fakeGit(["origin/main:a.ts", "origin/next:a.ts"]),
+        "",
+        "origin",
+        "a.ts",
+        "next"
+      ),
+      "next"
+    );
+  });
+
+  test("should fall back to the current branch", async () => {
+    const run = fakeGit(["origin/main:b.ts"]);
+    assert.equal(
+      await common.resolveBranch(run, "", "origin", "a.ts", ""),
+      "feature/x"
+    );
+  });
+
+  test("should fall back to the commit sha on a detached HEAD", async () => {
+    const run = fakeGit([], "", "HEAD");
+    assert.equal(
+      await common.resolveBranch(run, "", "origin", "a.ts", ""),
+      "abc123"
+    );
+  });
+});
+
 suite("#prepareQuickPickItems", () => {
   const formatters = {
     github: () => "",

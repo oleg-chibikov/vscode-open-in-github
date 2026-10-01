@@ -1,6 +1,6 @@
 import { window, workspace, QuickPickItem } from "vscode";
 
-const exec = require("child_process").exec;
+const { exec, execFile } = require("child_process");
 const path = require("path");
 const open = require("open");
 const R = require("ramda");
@@ -28,93 +28,116 @@ export type RemoteURLMappings = Record<string, string>;
  *
  * @return {Promise}
  */
-export function baseCommand(
+export async function baseCommand(
   commandName: string,
   action: Action,
   formatters: Formatters
 ) {
-  const activeTextEditor = window.activeTextEditor;
+  const editor = window.activeTextEditor;
 
-  if (!activeTextEditor) {
+  if (!editor) {
     window.showErrorMessage("No opened files.");
     return;
   }
 
-  const filePath = window.activeTextEditor.document.fileName;
-  const fileUri = window.activeTextEditor.document.uri;
-  const lineStart = window.activeTextEditor.selection.start.line + 1;
-  const lineEnd = window.activeTextEditor.selection.end.line + 1;
-  const selectedLines = { start: lineStart, end: lineEnd };
+  const filePath = editor.document.fileName;
+  const selectedLines = {
+    start: editor.selection.start.line + 1,
+    end: editor.selection.end.line + 1,
+  };
   const config = workspace.getConfiguration(
     "openInGitHub",
-    window.activeTextEditor.document.uri
+    editor.document.uri
   );
-  const defaultBranch =
-    workspace
-      .getConfiguration("openInGitHub", fileUri)
-      .get<string>("defaultBranch") || "master";
-  const defaultRemote =
-    workspace
-      .getConfiguration("openInGitHub", fileUri)
-      .get<string>("defaultRemote") || "origin";
-  const alwaysUseDefaultBranch =
-    workspace
-      .getConfiguration("openInGitHub", fileUri)
-      .get<string>("alwaysUseDefaultBranch") || false;
-  const maxBuffer =
-    workspace
-      .getConfiguration("openInGithub", fileUri)
-      .get<number>("maxBuffer") || undefined;
-  const excludeCurrentRevision =
-    workspace
-      .getConfiguration("openInGitHub")
-      .get<boolean>("excludeCurrentRevision") || false;
+  const configuredBranch = config.get<string>("defaultBranch") || "";
+  const defaultRemote = config.get<string>("defaultRemote") || "origin";
   const remoteURLMapping =
-    workspace
-      .getConfiguration("openInGitHub")
-      .get<RemoteURLMappings>("remoteURLMapping") || {};
+    config.get<RemoteURLMappings>("remoteURLMapping") || {};
   const repositoryType = config.get<string>("repositoryType");
-  const projectPath = path.dirname(filePath);
 
-  return getRepoRoot(exec, projectPath).then((repoRootPath) => {
-    const relativeFilePath = path.relative(repoRootPath, filePath);
+  try {
+    const repoRootPath = await getRepoRoot(exec, path.dirname(filePath));
+    const relativeFilePath = path
+      .relative(repoRootPath, filePath)
+      .split(path.sep)
+      .join("/");
+    const [remotes, branch] = await Promise.all([
+      getRemoteByName(exec, repoRootPath, defaultRemote).then(formatRemotes),
+      resolveBranch(
+        git,
+        repoRootPath,
+        defaultRemote,
+        relativeFilePath,
+        configuredBranch
+      ),
+    ]);
+    const [item] = formatQuickPickItems(
+      repositoryType,
+      formatters,
+      remoteURLMapping,
+      commandName,
+      relativeFilePath,
+      selectedLines,
+      remotes,
+      branch
+    );
+    return action(item);
+  } catch (err) {
+    return displayErrorMessage(err);
+  }
+}
 
-    return (
-      alwaysUseDefaultBranch
-        ? Promise.resolve([defaultBranch])
-        : getBranches(
-            exec,
-            projectPath,
-            defaultBranch,
-            maxBuffer,
-            excludeCurrentRevision
-          )
-    )
-      .then((branches) => {
-        const getRemotesPromise = getRemotes(
-          exec,
-          projectPath,
-          defaultRemote,
-          defaultBranch,
-          branches
-        ).then(formatRemotes);
-        return Promise.all([getRemotesPromise, branches]);
-      })
-      .then((result) => {
-        return prepareQuickPickItems(
-          repositoryType,
-          formatters,
-          remoteURLMapping,
-          commandName,
-          relativeFilePath,
-          selectedLines,
-          result
-        );
-      })
-      .then(showQuickPickWindow)
-      .then(action)
-      .catch(displayErrorMessage);
+export type Git = (args: string[], cwd: string) => Promise<string>;
+
+function git(args: string[], cwd: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    execFile("git", args, { cwd }, (error, stdout) =>
+      error ? reject(error) : resolve(stdout.trim())
+    );
   });
+}
+
+/**
+ * Returns the main branch if the path exists there, otherwise the current branch.
+ */
+export async function resolveBranch(
+  run: Git,
+  repoRootPath: string,
+  remote: string,
+  relativePath: string,
+  configuredBranch: string
+): Promise<string> {
+  const remoteHead = await run(
+    ["symbolic-ref", "--short", `refs/remotes/${remote}/HEAD`],
+    repoRootPath
+  ).then(
+    (ref) => ref.slice(remote.length + 1),
+    () => ""
+  );
+  const candidates: string[] = R.uniq(
+    [configuredBranch, remoteHead, "main", "master"].filter(Boolean)
+  );
+  const found = await Promise.all(
+    candidates.map((branch) =>
+      run(
+        ["cat-file", "-e", `${remote}/${branch}:${relativePath}`],
+        repoRootPath
+      ).then(
+        () => true,
+        () => false
+      )
+    )
+  );
+  const mainBranch = candidates.find((_, i) => found[i]);
+  if (mainBranch) return mainBranch;
+
+  const currentBranch = await run(
+    ["rev-parse", "--abbrev-ref", "HEAD"],
+    repoRootPath
+  );
+  return currentBranch === "HEAD"
+    ? run(["rev-parse", "HEAD"], repoRootPath)
+    : currentBranch;
 }
 
 function displayErrorMessage(err: string | (Error & { code?: string })) {
