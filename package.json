@@ -1,16 +1,13 @@
 {
-  "name": "vscode-open-in-github",
-  "displayName": "Open In GitHub",
-  "description": "Provides commands to quickly view the current file on GitHub.",
+  "name": "open-in-remote-repo",
+  "displayName": "Open in Remote Repo",
+  "description": "Open or copy a link to a file or folder on GitHub, GitLab or Bitbucket. Links point to main or master.",
   "license": "MIT",
-  "version": "1.18.0",
-  "publisher": "sysoev",
+  "version": "1.19.0",
+  "publisher": "oleg-chibikov",
   "engines": {
     "vscode": "^1.75.0"
   },
-  "files": [
-    "./out"
-  ],
   "categories": [
     "Other"
   ],
@@ -18,15 +15,16 @@
     "multi-root ready",
     "vscode",
     "github",
+    "gitlab",
     "bitbucket",
     "git"
   ],
-  "homepage": "https://github.com/d4rkr00t/vscode-open-in-github",
+  "homepage": "https://github.com/oleg-chibikov/vscode-open-in-github",
   "repository": {
     "type": "git",
-    "url": "https://github.com/d4rkr00t/vscode-open-in-github.git"
+    "url": "https://github.com/oleg-chibikov/vscode-open-in-github.git"
   },
-  "bugs": "https://github.com/d4rkr00t/vscode-open-in-github/issues",
+  "bugs": "https://github.com/oleg-chibikov/vscode-open-in-github/issues",
   "main": "./out/extension.js",
   "icon": "./assets/icon.jpg",
   "contributes": {
@@ -67,40 +65,40 @@
     "commands": [
       {
         "command": "openInGithub.openInGitHubFile",
-        "title": "Open In GitHub: Open File URL"
+        "title": "Remote Repo: Open File URL"
       },
       {
         "command": "openInGithub.openInGitHubBlame",
-        "title": "Open In GitHub: Open Blame URL"
+        "title": "Remote Repo: Open Blame URL"
       },
       {
         "command": "openInGithub.openInGitHubHistory",
-        "title": "Open In GitHub: Open History URL"
+        "title": "Remote Repo: Open History URL"
       },
       {
         "command": "openInGithub.copyInGitHubFile",
-        "title": "Open in GitHub: Copy File URL"
+        "title": "Remote Repo: Copy File URL"
       },
       {
         "command": "openInGithub.copyInGitHubBlame",
-        "title": "Open in GitHub: Copy Blame URL"
+        "title": "Remote Repo: Copy Blame URL"
       },
       {
         "command": "openInGithub.copyInGitHubHistory",
-        "title": "Open in GitHub: Copy History URL"
+        "title": "Remote Repo: Copy History URL"
       },
       {
         "command": "openInGithub.openInGitHubExplorer",
-        "title": "Open In GitHub: Open URL"
+        "title": "Remote Repo: Open URL"
       },
       {
         "command": "openInGithub.copyInGitHubExplorer",
-        "title": "Open in GitHub: Copy URL"
+        "title": "Remote Repo: Copy URL"
       }
     ],
     "configuration": {
       "type": "object",
-      "title": "Open in GitHub",
+      "title": "Open in Remote Repo",
       "properties": {
         "openInGitHub.defaultBranch": {
           "scope": "resource",

@@ -1,32 +1,29 @@
-# Open in GitHub
+# Open in Remote Repo
 
-[![github-issues](https://img.shields.io/github/issues/d4rkr00t/vscode-open-in-github.svg)](https://github.com/d4rkr00t/vscode-open-in-github/issues)
-[![commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cl)
+Opens or copies a link to the current file or folder on GitHub, GitLab or Bitbucket.
 
-Provides commands to quickly view the current file on GitHub/Bitbucket.
+A fork of [Open in GitHub](https://github.com/d4rkr00t/vscode-open-in-github) by Stanislav Sysoev.
 
 ## Installation
 
-Launch VS Code Quick Open (⌘+P), paste the following command, and type enter.
+Launch VS Code Quick Open (⌘+P), paste the following command, and press Enter.
 
 ```
-ext install vscode-open-in-github
+ext install oleg-chibikov.open-in-remote-repo
 ```
+
+Uninstall the original Open in GitHub first. Both use the same command ids.
 
 ## Usage
 
-When editing a file, use the command palette (cmd + shift + p / ctrl + shift + p) to:
+When editing a file, run these from the command palette (cmd + shift + p / ctrl + shift + p):
 
-- Open the file in GitHub — "Open In GitHub: File"
-- Open the blame in GitHub — "Open In GitHub: Blame"
-- Open the history in GitHub — "Open In GitHub: History"
-- Copy GitHub URL for a file — "Copy GitHub URL: File"
-- Copy GitHub URL for blame for a file — "Copy GitHub URL: Blame"
-- Copy GitHub URL for history for a file — "Copy GitHub URL: History"
+- **Remote Repo: Open File URL** opens the file, with the selected lines.
+- **Remote Repo: Open Blame URL** opens the blame.
+- **Remote Repo: Open History URL** opens the history.
+- **Remote Repo: Copy File URL**, **Copy Blame URL**, **Copy History URL** copy the same links.
 
 Right click a file or folder in the Explorer to open or copy its URL.
-
-![Commands](assets/commands.png)
 
 ## Features
 
