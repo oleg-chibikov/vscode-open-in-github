@@ -42,6 +42,26 @@
           "group": "OpenInGithub",
           "when": "editorTextFocus"
         }
+      ],
+      "explorer/context": [
+        {
+          "command": "openInGithub.openInGitHubExplorer",
+          "group": "OpenInGithub"
+        },
+        {
+          "command": "openInGithub.copyInGitHubExplorer",
+          "group": "OpenInGithub"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "openInGithub.openInGitHubExplorer",
+          "when": "false"
+        },
+        {
+          "command": "openInGithub.copyInGitHubExplorer",
+          "when": "false"
+        }
       ]
     },
     "commands": [
@@ -68,6 +88,14 @@
       {
         "command": "openInGithub.copyInGitHubHistory",
         "title": "Open in GitHub: Copy History URL"
+      },
+      {
+        "command": "openInGithub.openInGitHubExplorer",
+        "title": "Open In GitHub: Open URL"
+      },
+      {
+        "command": "openInGithub.copyInGitHubExplorer",
+        "title": "Open in GitHub: Copy URL"
       }
     ],
     "configuration": {

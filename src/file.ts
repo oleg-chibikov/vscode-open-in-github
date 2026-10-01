@@ -1,3 +1,4 @@
+import { Uri } from "vscode";
 import {
   baseCommand,
   formatBitbucketLinePointer,
@@ -12,13 +13,18 @@ import {
 import { formatBitbucketServerUrl } from "./bitbucketServer";
 
 export default function fileCommand(action: Action) {
-  return () =>
-    baseCommand("file", action, {
-      github: formatGitHubFileUrl,
-      bitbucket: formatBitbucketFileUrl,
-      bitbucketServer: formatBitbucketServerUrl,
-      gitlab: formatGitlabFileUrl,
-    });
+  return (explorerUri?: Uri) =>
+    baseCommand(
+      "file",
+      action,
+      {
+        github: formatGitHubFileUrl,
+        bitbucket: formatBitbucketFileUrl,
+        bitbucketServer: formatBitbucketServerUrl,
+        gitlab: formatGitlabFileUrl,
+      },
+      explorerUri
+    );
 }
 
 export function formatGitHubFileUrl(

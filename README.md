@@ -24,6 +24,8 @@ When editing a file, use the command palette (cmd + shift + p / ctrl + shift + p
 - Copy GitHub URL for blame for a file — "Copy GitHub URL: Blame"
 - Copy GitHub URL for history for a file — "Copy GitHub URL: History"
 
+Right click a file or folder in the Explorer to open or copy its URL.
+
 ![Commands](assets/commands.png)
 
 ## Features

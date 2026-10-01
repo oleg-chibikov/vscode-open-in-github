@@ -1,4 +1,4 @@
-import { window, workspace, QuickPickItem } from "vscode";
+import { window, workspace, FileType, QuickPickItem, Uri } from "vscode";
 
 const { exec, execFile } = require("child_process");
 const path = require("path");
@@ -31,24 +31,25 @@ export type RemoteURLMappings = Record<string, string>;
 export async function baseCommand(
   commandName: string,
   action: Action,
-  formatters: Formatters
+  formatters: Formatters,
+  explorerUri?: Uri
 ) {
   const editor = window.activeTextEditor;
+  const uri = explorerUri ?? editor?.document.uri;
 
-  if (!editor) {
+  if (!uri) {
     window.showErrorMessage("No opened files.");
     return;
   }
 
-  const filePath = editor.document.fileName;
-  const selectedLines = {
-    start: editor.selection.start.line + 1,
-    end: editor.selection.end.line + 1,
-  };
-  const config = workspace.getConfiguration(
-    "openInGitHub",
-    editor.document.uri
-  );
+  const filePath = uri.fsPath;
+  const selectedLines = explorerUri
+    ? undefined
+    : {
+        start: editor.selection.start.line + 1,
+        end: editor.selection.end.line + 1,
+      };
+  const config = workspace.getConfiguration("openInGitHub", uri);
   const configuredBranch = config.get<string>("defaultBranch") || "";
   const defaultRemote = config.get<string>("defaultRemote") || "origin";
   const remoteURLMapping =
@@ -56,7 +57,13 @@ export async function baseCommand(
   const repositoryType = config.get<string>("repositoryType");
 
   try {
-    const repoRootPath = await getRepoRoot(exec, path.dirname(filePath));
+    const isFolder =
+      explorerUri &&
+      ((await workspace.fs.stat(uri)).type & FileType.Directory) !== 0;
+    const repoRootPath = await getRepoRoot(
+      exec,
+      isFolder ? filePath : path.dirname(filePath)
+    );
     const relativeFilePath = path
       .relative(repoRootPath, filePath)
       .split(path.sep)
@@ -394,7 +401,7 @@ export function formatQuickPickItems(
   remoteURLMappings: RemoteURLMappings,
   commandName: string,
   relativeFilePath: string,
-  lines: SelectedLines,
+  lines: SelectedLines | undefined,
   remotes: string[],
   branch: string
 ): QuickPickItem[] {
