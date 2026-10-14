@@ -254,6 +254,26 @@ suite("#resolveBranch", () => {
   });
 });
 
+suite("#toRepoRelativePath", () => {
+  test("should use the symlink target inside the repo", () => {
+    assert.equal(
+      common.toRepoRelativePath(
+        "/repo",
+        "/repo/.agents/skills/a/SKILL.md",
+        "/repo/.claude/skills/a/SKILL.md"
+      ),
+      ".agents/skills/a/SKILL.md"
+    );
+  });
+
+  test("should keep the link path when the target is outside the repo", () => {
+    assert.equal(
+      common.toRepoRelativePath("/repo", "/elsewhere/a.md", "/repo/docs/a.md"),
+      "docs/a.md"
+    );
+  });
+});
+
 suite("#prepareQuickPickItems", () => {
   const formatters = {
     github: () => "",

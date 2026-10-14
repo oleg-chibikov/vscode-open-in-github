@@ -1,6 +1,7 @@
 import { window, workspace, FileType, QuickPickItem, Uri } from "vscode";
 
 const { exec, execFile } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 const open = require("open");
 const R = require("ramda");
@@ -64,10 +65,11 @@ export async function baseCommand(
       exec,
       isFolder ? filePath : path.dirname(filePath)
     );
-    const relativeFilePath = path
-      .relative(repoRootPath, filePath)
-      .split(path.sep)
-      .join("/");
+    const relativeFilePath = toRepoRelativePath(
+      repoRootPath,
+      await fs.promises.realpath(filePath),
+      filePath
+    );
     const [remotes, branch] = await Promise.all([
       getRemoteByName(exec, repoRootPath, defaultRemote).then(formatRemotes),
       resolveBranch(
@@ -92,6 +94,21 @@ export async function baseCommand(
   } catch (err) {
     return displayErrorMessage(err);
   }
+}
+
+/**
+ * Prefers the symlink target so the path exists on the remote, unless it points outside the repo.
+ */
+export function toRepoRelativePath(
+  repoRootPath: string,
+  realFilePath: string,
+  filePath: string
+): string {
+  const real = path.relative(repoRootPath, realFilePath);
+  const relative = real.startsWith("..")
+    ? path.relative(repoRootPath, filePath)
+    : real;
+  return relative.split(path.sep).join("/");
 }
 
 export type Git = (args: string[], cwd: string) => Promise<string>;
@@ -528,8 +545,11 @@ export function formatGitHubLinePointer(lines?: SelectedLines): string {
   return linePointer;
 }
 
-export function formatGitHubQueryParams(filePath: string): string {
-  if (filePath.endsWith(".md")) {
+export function formatGitHubQueryParams(
+  filePath: string,
+  lines?: SelectedLines
+): string {
+  if (lines?.start && filePath.endsWith(".md")) {
     return "?plain=1";
   }
 

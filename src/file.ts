@@ -40,9 +40,10 @@ export function formatGitHubFileUrl(
       : derivedRemote;
   return `${remote}/blob/${formatGithubBranchName(
     branch
-  )}/${filePath}${formatGitHubQueryParams(filePath)}${formatGitHubLinePointer(
+  )}/${filePath}${formatGitHubQueryParams(
+    filePath,
     lines
-  )}`;
+  )}${formatGitHubLinePointer(lines)}`;
 }
 
 export function formatBitbucketFileUrl(

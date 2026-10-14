@@ -92,6 +92,15 @@ suite("fileCommand # formatGitHubFileUrl", () => {
       "https://remote.url/blob/master/rel/path/to/file.md?plain=1#L10"
     );
   });
+
+  test("should skip ?plain=1 for markdown links without lines", () => {
+    const results = file.formatGitHubFileUrl(
+      "https://remote.url",
+      "main",
+      "rel/path/to/file.md"
+    );
+    assert.equal(results, "https://remote.url/blob/main/rel/path/to/file.md");
+  });
 });
 
 suite("fileCommand # formatBitbucketFileUrl", () => {
